@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Desire Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-profile {
+            display: none;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-profile.active {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-details {
+            line-height: 1.4;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .user-email {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .signout-btn {
+            padding: 8px 16px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .signout-btn:hover {
+            background: #c53030;
+        }
+
+        .google-signin-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #2d3748;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .google-signin-btn:hover {
+            background: #f7fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .google-signin-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .toast.success {
+            background: #48bb78;
+        }
+
+        .toast.error {
+            background: #f56565;
+        }
+
+        .toast.info {
+            background: #4299e1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        /* Rest of your existing styles */
+        /* ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Enhanced Desire Tracker</h1>
+        
+        <div id="userProfile" class="user-profile">
+            <div class="user-info">
+                <img id="userAvatar" class="user-avatar" src="" alt="Profile">
+                <div class="user-details">
+                    <div id="userName" class="user-name"></div>
+                    <div id="userEmail" class="user-email"></div>
+                </div>
+            </div>
+            <button id="signOutBtn" class="signout-btn">Sign Out</button>
+        </div>
+
+        <button id="googleSignInBtn" class="google-signin-btn">
+            <img src="https://www.google.com/favicon.ico" alt="Google">
+            Sign in with Google
+        </button>
+
+        <!-- Rest of your existing HTML -->
+        <!-- ... -->
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider,
+            signOut,
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            orderBy
+        } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLfBy9R_tL8WPRJpmKZMcy70OzhId9V1w",
+            authDomain: "desires-b59a7.firebaseapp.com",
+            projectId: "desires-b59a7",
+            storageBucket: "desires-b59a7.firebasestorage.app",
+            messagingSenderId: "942109661123",
+            appId: "1:942109661123:web:84f2532a442f9d49bb8f76"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // Toast functionality
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+            `;
+            
+            const container = document.getElementById('toastContainer');
+            container.appendChild(toast);
+
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {
+            const userProfile = document.getElementById('userProfile');
+            const signInBtn = document.getElementById('googleSignInBtn');
+
+            if (user) {
+                // User is signed in
+                userProfile.classList.add('active');
+                document.getElementById('userAvatar').src = user.photoURL;
+                document.getElementById('userName').textContent = user.displayName;
+                document.getElementById('userEmail').textContent = user.email;
+                signInBtn.style.display = 'none';
+                showToast(`Welcome back, ${user.displayName}! 👋`, 'success');
+            } else {
+                // User is signed out
+                userProfile.classList.remove('active');
+                signInBtn.style.display = 'flex';
+            }
+        });
+
+        // Sign in with Google
+        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                showToast(`Welcome, ${result.user.displayName}! 🎉`, 'success');
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                showToast('Failed to sign in. Please try again.', 'error');
+            }
+        });
+
+        // Sign out
+        document.getElementById('signOutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showToast('Successfully signed out. See you soon! 👋', 'info');
+            } catch (error) {
+                console.error('Sign-out error:', error);
+                showToast('Failed to sign out. Please try again.', 'error');
+            }
+        });
+
+        // Your existing DesireTracker class implementation
+        class DesireTracker {
+            constructor() {
+                this.desires = [];
+                this.form = document.getElementById('desireForm');
+                this.list = document.getElementById('desiresList');
+                this.micBtn = document.getElementById('micBtn');
+                this.recognition = null;
+                this.isRecording = false;
+                
+                this.initialize();
+                this.initializeSpeechRecognition();
+                this.initializeDragAndDrop();
+            }
+
+            async initialize() {
+                if (!auth.currentUser) return;
+
+                try {
+                    const desiresRef = collection(db, `users/${auth.currentUser.uid}/desires`);
+                    const q = query(desiresRef, orderBy("createdAt", "desc"));
+                    const snapshot = await getDocs(q);
+                    
+                    this.desires = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    this.displayDesires();
+                    showToast('Your desires have been loaded! 📚', 'info');
+                } catch (error) {
+                    console.error('Error loading desires:', error);
+                    showToast('Failed to load your desires. Please refresh.', 'error');
+                }
+
+                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.micBtn.addEventListener('click', () => this.toggleSpeechRecognition());
+            }
+
+            initializeSpeechRecognition() {
+                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = true;
+
+                    this.recognition.onstart = () => {
+                        this.isRecording = true;
+                        this.micBtn.classList.add('recording');
+                        this.micBtn.textContent = '🎤 Stop Dictation';
+                        showToast('Listening... Speak your desire! 🎙️', 'info');
+                    };
+
+                    this.recognition.onend = () => {
+                        this.isRecording = false;
+                        this.micBtn.classList.remove('recording');
+                        this.micBtn.textContent = '🎤 Start Dictation';
+                    };
+
+                    this.recognition.onresult = (event) => {
+                        let finalTranscript = '';
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript + ' ';
+                            }
+                        }
+                        if (finalTranscript) {
+                            document.getElementById('desireTitle').value = finalTranscript.trim();
+                            this.stopSpeechRecognition();
+                            showToast('Got it! Review and submit your desire ✨', 'success');
+                        }
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.stopSpeechRecognition();
+                        showToast('Speech recognition failed. Please try again.', 'error');
+                    };
+                } else {
+                    this.micBtn.style.display = 'none';
+                    console.warn('Speech recognition not supported');
+                    showToast('Speech recognition is not supported in your browser 😢', 'error');
+                }
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                if (!auth.currentUser) {
+                    showToast('Please sign in to add desires! 🔐', 'error');
+                    return;
+                }
+
+                const desire = {
+                    title: document.getElementById('desireTitle').value,
+                    description: document.getElementById('desireDescription').value,
+                    priority: document.getElementById('desirePriority').value,
+                    createdAt: new Date().toISOString(),
+                    userId: auth.currentUser.uid
+                };
+
+                try {
+                    const desireRef = await addDoc(
+                        collection(db, `users/${auth.currentUser.uid}/desires`),
+                        desire
+                    );
+                    
+                    this.desires.unshift({ ...desire, id: desireRef.id });
+                    this.displayDesires();
+                    this.form.reset();
+                    showToast('Desire added successfully! 🌟', 'success
+        }
+
+        // Initialize the application
+        const desireTracker = new DesireTracker();
+    </script>
+</body>
+</html>
