@@ -630,6 +630,17 @@
         this.desires = [];
         this.displayDesires();
       }
+      async handleSignOut() {
+  try {
+    await signOut(auth);
+    this.showToast('Signed out successfully!');
+    // The onAuthStateChanged observer will handle UI updates
+  } catch (error) {
+    console.error('Sign-out error:', error);
+    this.showToast('Error signing out', true);
+  }
+}
+      this.signOutBtn.addEventListener('click', () => this.handleSignOut());
 
       toggleView() {
         this.isViewingArchive = !this.isViewingArchive;
