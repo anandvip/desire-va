@@ -1,415 +1,921 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Desire Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desire Tracker</title>
+  <style>
+    /* Reset and Base Styles */
+   * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
+    
 
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
+    .header {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .user-profile {
-            display: none;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+    .header .user-info {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-        .user-profile.active {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-        }
+    .header .user-info span {
+      font-size: 1rem;
+    }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    .header button {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
 
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+    .header button:hover {
+      background: #d32f2f;
+    }
 
-        .user-details {
-            line-height: 1.4;
-        }
+    .container {
+      max-width: 700px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      width: 100%;
+    }
 
-        .user-name {
-            font-weight: 600;
-            color: #2d3748;
-        }
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #222;
+    }
 
-        .user-email {
-            font-size: 0.9em;
-            color: #718096;
-        }
+    .input-methods {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
 
-        .signout-btn {
-            padding: 8px 16px;
-            background: #e53e3e;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
+    button {
+      background: #fff;
+      color: #000;
+      border: 0.5pt solid #000;
+      border-radius: 4px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-        .signout-btn:hover {
-            background: #c53030;
-        }
+    button:hover {
+      background: linear-gradient(45deg, rgba(2, 0, 36, 1) 0%, rgba(0, 255, 254, 1) 40%, rgba(252, 148, 98, 0.1) 82%);
+    }
 
-        .google-signin-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 20px auto;
-            padding: 12px 24px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #2d3748;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    form {
+      margin-bottom: 20px;
+    }
 
-        .google-signin-btn:hover {
-            background: #f7fafc;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+    .form-group {
+      margin-bottom: 15px;
+    }
 
-        .google-signin-btn img {
-            width: 20px;
-            height: 20px;
-        }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
 
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.3s ease;
+    }
 
-        .toast {
-            padding: 16px 24px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease-out;
-            max-width: 400px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+    input:focus, textarea:focus {
+      border-color: #00bcd4;
+    }
 
-        .toast.success {
-            background: #48bb78;
-        }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
 
-        .toast.error {
-            background: #f56565;
-        }
+    .desires-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .toast.info {
-            background: #4299e1;
-        }
+    .desire-card {
+      background: #f8f8f8;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
+    .desire-card h3 {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 8px;
+    }
 
-        @keyframes fadeOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
+    .desire-card p {
+      color: #666;
+      font-size: 1rem;
+      margin: 0;
+    }
 
-        .fade-out {
-            animation: fadeOut 0.3s ease-out forwards;
-        }
+    .desire-card .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #ff0000;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
 
-        /* Rest of your existing styles */
-        /* ... */
-    </style>
+    .desire-card .delete-btn:hover {
+      color: #d32f2f;
+    }
+
+    .note-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .note-input input {
+      flex: 1;
+    }
+
+    .note-list {
+      margin-top: 10px;
+    }
+
+    .note {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      background: #cecece;
+    }
+
+    .note span {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .note .note-delete {
+      background: none;
+      border: none;
+      color: #ff0000;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .note .note-delete:hover {
+      color: #d32f2f;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #00bcd4;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #888;
+      font-size: 1rem;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+        max-width: 90%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (min-aspect-ratio: 3/4) {
+      .container {
+        max-width: 80%;
+      }
+    }
+    /* Main Layout and Background */
+    body {
+      background: #f9f9f9;
+      color: #333;
+      font-size: 16px;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: url('https://images.unsplash.com/photo-1557103224-66837249473e?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzU2NDA1MTF8&ixlib=rb-4.0.3&q=85');
+      background-size: cover;
+    }
+
+    /* Header Styles */
+    .header {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    .header .user-info {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    /* View Toggle Button */
+    .view-toggle {
+      background: none;
+      border: 1px solid #4a5568;
+      color: #4a5568;
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin: 0 auto 20px;
+      display: block;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .view-toggle:hover {
+      background: #4a5568;
+      color: white;
+    }
+
+    /* Desire Cards */
+    .desire-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .desire-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .desire-card.completed {
+      border-left: 4px solid #48bb78;
+    }
+
+    /* Card Actions */
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* Buttons */
+    button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: #4a5568;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2d3748;
+    }
+
+    .btn-success {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #38a169;
+    }
+
+    .btn-danger {
+      background: #fc8181;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #f56565;
+    }
+
+    /* Notes and Comments */
+    .notes-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed #e2e8f0;
+    }
+
+    .note {
+      background: #f7fafc;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .note-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .note-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+
+    /* Gratitude Section */
+    .gratitude-section {
+      background: #f0fff4;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .gratitude-note {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 3px solid #48bb78;
+    }
+
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 6px;
+      background: #4a5568;
+      color: white;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #718096;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+
+      .desire-card {
+        padding: 15px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>✨ Enhanced Desire Tracker</h1>
-        
-        <div id="userProfile" class="user-profile">
-            <div class="user-info">
-                <img id="userAvatar" class="user-avatar" src="" alt="Profile">
-                <div class="user-details">
-                    <div id="userName" class="user-name"></div>
-                    <div id="userEmail" class="user-email"></div>
-                </div>
-            </div>
-            <button id="signOutBtn" class="signout-btn">Sign Out</button>
-        </div>
+  <!-- Header with User Info -->
+  <div class="header">
+    <div class="user-info">
+      <span id="userName">Guest</span>
+      <span id="userEmail"></span>
+    </div>
+    <button id="signOutBtn" class="btn-danger" style="display: none;">Sign Out</button>
+  </div>
 
-        <button id="googleSignInBtn" class="google-signin-btn">
-            <img src="https://www.google.com/favicon.ico" alt="Google">
-            Sign in with Google
-        </button>
+  <!-- Main Container -->
+  <div class="container">
+    <h1>✨ Desire Tracker</h1>
 
-        <!-- Rest of your existing HTML -->
-        <!-- ... -->
+    <!-- Authentication Button -->
+    <div class="input-methods">
+      <button id="googleSignInBtn" class="btn-primary">
+        🔑 Sign In with Google
+      </button>
     </div>
 
-    <div id="toastContainer" class="toast-container"></div>
+    <!-- Archive Toggle -->
+    <button id="viewToggleBtn" class="view-toggle">
+      📦 View Archive
+    </button>
 
-    <!-- Firebase Scripts -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
-        import { 
-            getAuth, 
-            signInWithPopup, 
-            GoogleAuthProvider,
-            signOut,
-            onAuthStateChanged 
-        } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
-        import {
-            getFirestore,
-            collection,
-            addDoc,
-            getDocs,
-            query,
-            orderBy
-        } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+    <!-- Desire Input Form -->
+    <form id="desireForm">
+      <div class="form-group">
+        <label for="desireTitle">What's your desire?</label>
+        <input 
+          type="text" 
+          id="desireTitle" 
+          required 
+          placeholder="Enter your desire..."
+        >
+      </div>
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCLfBy9R_tL8WPRJpmKZMcy70OzhId9V1w",
-            authDomain: "desires-b59a7.firebaseapp.com",
-            projectId: "desires-b59a7",
-            storageBucket: "desires-b59a7.firebasestorage.app",
-            messagingSenderId: "942109661123",
-            appId: "1:942109661123:web:84f2532a442f9d49bb8f76"
-        };
+      <div class="form-group">
+        <label for="desireDescription">Description</label>
+        <textarea 
+          id="desireDescription" 
+          placeholder="Describe your desire in detail..."
+        ></textarea>
+      </div>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+      <button type="submit" class="btn-primary">Add Desire</button>
+    </form>
 
-        // Toast functionality
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${message}</span>
-            `;
-            
-            const container = document.getElementById('toastContainer');
-            container.appendChild(toast);
+    <!-- Desires List Container -->
+    <div id="desiresList"></div>
 
-            // Remove toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.add('fade-out');
-                setTimeout(() => {
-                    container.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
+    <!-- Empty State Message -->
+    <div id="emptyState" class="empty-state">
+      No desires added yet. Start by adding one!
+    </div>
+  </div>
 
-        // Auth state observer
-        onAuthStateChanged(auth, (user) => {
-            const userProfile = document.getElementById('userProfile');
-            const signInBtn = document.getElementById('googleSignInBtn');
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
 
-            if (user) {
-                // User is signed in
-                userProfile.classList.add('active');
-                document.getElementById('userAvatar').src = user.photoURL;
-                document.getElementById('userName').textContent = user.displayName;
-                document.getElementById('userEmail').textContent = user.email;
-                signInBtn.style.display = 'none';
-                showToast(`Welcome back, ${user.displayName}! 👋`, 'success');
-            } else {
-                // User is signed out
-                userProfile.classList.remove('active');
-                signInBtn.style.display = 'flex';
-            }
-        });
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      signOut, 
+      GoogleAuthProvider 
+    } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      doc,
+      deleteDoc,
+      updateDoc,
+      arrayUnion,
+      arrayRemove
+    } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // Sign in with Google
-        document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                showToast(`Welcome, ${result.user.displayName}! 🎉`, 'success');
-            } catch (error) {
-                console.error('Sign-in error:', error);
-                showToast('Failed to sign in. Please try again.', 'error');
-            }
-        });
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCLfBy9R_tL8WPRJpmKZMcy70OzhId9V1w",
+      authDomain: "desires-b59a7.firebaseapp.com",
+      projectId: "desires-b59a7",
+      storageBucket: "desires-b59a7.firebasestorage.app",
+      messagingSenderId: "942109661123",
+      appId: "1:942109661123:web:84f2532a442f9d49bb8f76"
+    };
 
-        // Sign out
-        document.getElementById('signOutBtn').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showToast('Successfully signed out. See you soon! 👋', 'info');
-            } catch (error) {
-                console.error('Sign-out error:', error);
-                showToast('Failed to sign out. Please try again.', 'error');
-            }
-        });
+    // Initialize Firebase services
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        // Your existing DesireTracker class implementation
-        class DesireTracker {
-            constructor() {
-                this.desires = [];
-                this.form = document.getElementById('desireForm');
-                this.list = document.getElementById('desiresList');
-                this.micBtn = document.getElementById('micBtn');
-                this.recognition = null;
-                this.isRecording = false;
-                
-                this.initialize();
-                this.initializeSpeechRecognition();
-                this.initializeDragAndDrop();
-            }
+    class DesireTracker {
+      constructor() {
+        // Initialize state
+        this.desires = [];
+        this.userId = null;
+        this.isViewingArchive = false;
 
-            async initialize() {
-                if (!auth.currentUser) return;
-
-                try {
-                    const desiresRef = collection(db, `users/${auth.currentUser.uid}/desires`);
-                    const q = query(desiresRef, orderBy("createdAt", "desc"));
-                    const snapshot = await getDocs(q);
-                    
-                    this.desires = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                    this.displayDesires();
-                    showToast('Your desires have been loaded! 📚', 'info');
-                } catch (error) {
-                    console.error('Error loading desires:', error);
-                    showToast('Failed to load your desires. Please refresh.', 'error');
-                }
-
-                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-                this.micBtn.addEventListener('click', () => this.toggleSpeechRecognition());
-            }
-
-            initializeSpeechRecognition() {
-                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    this.recognition = new SpeechRecognition();
-                    this.recognition.continuous = true;
-                    this.recognition.interimResults = true;
-
-                    this.recognition.onstart = () => {
-                        this.isRecording = true;
-                        this.micBtn.classList.add('recording');
-                        this.micBtn.textContent = '🎤 Stop Dictation';
-                        showToast('Listening... Speak your desire! 🎙️', 'info');
-                    };
-
-                    this.recognition.onend = () => {
-                        this.isRecording = false;
-                        this.micBtn.classList.remove('recording');
-                        this.micBtn.textContent = '🎤 Start Dictation';
-                    };
-
-                    this.recognition.onresult = (event) => {
-                        let finalTranscript = '';
-                        for (let i = event.resultIndex; i < event.results.length; i++) {
-                            if (event.results[i].isFinal) {
-                                finalTranscript += event.results[i][0].transcript + ' ';
-                            }
-                        }
-                        if (finalTranscript) {
-                            document.getElementById('desireTitle').value = finalTranscript.trim();
-                            this.stopSpeechRecognition();
-                            showToast('Got it! Review and submit your desire ✨', 'success');
-                        }
-                    };
-
-                    this.recognition.onerror = (event) => {
-                        console.error('Speech recognition error:', event.error);
-                        this.stopSpeechRecognition();
-                        showToast('Speech recognition failed. Please try again.', 'error');
-                    };
-                } else {
-                    this.micBtn.style.display = 'none';
-                    console.warn('Speech recognition not supported');
-                    showToast('Speech recognition is not supported in your browser 😢', 'error');
-                }
-            }
-
-            async handleSubmit(e) {
-                e.preventDefault();
-                if (!auth.currentUser) {
-                    showToast('Please sign in to add desires! 🔐', 'error');
-                    return;
-                }
-
-                const desire = {
-                    title: document.getElementById('desireTitle').value,
-                    description: document.getElementById('desireDescription').value,
-                    priority: document.getElementById('desirePriority').value,
-                    createdAt: new Date().toISOString(),
-                    userId: auth.currentUser.uid
-                };
-
-                try {
-                    const desireRef = await addDoc(
-                        collection(db, `users/${auth.currentUser.uid}/desires`),
-                        desire
-                    );
-                    
-                    this.desires.unshift({ ...desire, id: desireRef.id });
-                    this.displayDesires();
-                    this.form.reset();
-                    showToast('Desire added successfully! 🌟', 'success
-        }
+        // Cache DOM elements
+        this.form = document.getElementById('desireForm');
+        this.list = document.getElementById('desiresList');
+        this.toastEl = document.getElementById('toast');
+        this.emptyState = document.getElementById('emptyState');
+        this.userNameEl = document.getElementById('userName');
+        this.userEmailEl = document.getElementById('userEmail');
+        this.signOutBtn = document.getElementById('signOutBtn');
+        this.viewToggleBtn = document.getElementById('viewToggleBtn');
 
         // Initialize the application
-        const desireTracker = new DesireTracker();
-    </script>
+        this.initialize();
+      }
+
+      initialize() {
+        // Set up event listeners
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        this.list.addEventListener('click', (e) => this.handleCardActions(e));
+        this.signOutBtn.addEventListener('click', () => this.handleSignOut());
+        this.viewToggleBtn.addEventListener('click', () => this.toggleView());
+
+        // Set up auth state observer
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            this.handleUserSignedIn(user);
+          } else {
+            this.handleUserSignedOut();
+          }
+        });
+
+        // Set up Google sign-in
+        document.getElementById('googleSignInBtn').addEventListener('click', 
+          async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+              const result = await signInWithPopup(auth, provider);
+              this.showToast(`Welcome, ${result.user.displayName}!`);
+            } catch (error) {
+              console.error('Authentication error:', error);
+              this.showToast('Failed to sign in', true);
+            }
+          }
+        );
+      }
+
+      async handleUserSignedIn(user) {
+        this.userId = user.uid;
+        this.userNameEl.textContent = user.displayName;
+        this.userEmailEl.textContent = user.email;
+        this.signOutBtn.style.display = 'inline-block';
+        document.getElementById('googleSignInBtn').style.display = 'none';
+        await this.fetchDesires();
+      }
+
+      handleUserSignedOut() {
+        this.userId = null;
+        this.userNameEl.textContent = 'Guest';
+        this.userEmailEl.textContent = '';
+        this.signOutBtn.style.display = 'none';
+        document.getElementById('googleSignInBtn').style.display = 'inline-block';
+        this.desires = [];
+        this.displayDesires();
+      }
+
+      toggleView() {
+        this.isViewingArchive = !this.isViewingArchive;
+        this.viewToggleBtn.textContent = this.isViewingArchive ? 
+          '👁️ View Active Desires' : 
+          '📦 View Archive';
+        this.displayDesires();
+      }
+
+      async fetchDesires() {
+        if (!this.userId) return;
+        try {
+          const userDesires = collection(db, 'users', this.userId, 'desires');
+          const snapshot = await getDocs(userDesires);
+          this.desires = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          this.displayDesires();
+        } catch (error) {
+          console.error('Error fetching desires:', error);
+          this.showToast('Failed to load desires', true);
+        }
+      }
+
+      async handleSubmit(e) {
+        e.preventDefault();
+        const title = document.getElementById('desireTitle').value.trim();
+        const description = document.getElementById('desireDescription').value.trim();
+
+        if (!title) {
+          this.showToast('Title cannot be empty', true);
+          return;
+        }
+
+        const newDesire = {
+          title,
+          description,
+          notes: [],
+          completed: false,
+          completionDate: null,
+          gratitudeNotes: [],
+          date: new Date().toISOString()
+        };
+
+        try {
+          if (this.userId) {
+            const userDesires = collection(db, 'users', this.userId, 'desires');
+            const docRef = await addDoc(userDesires, newDesire);
+            newDesire.id = docRef.id;
+          } else {
+            newDesire.id = Date.now().toString();
+          }
+
+          this.desires.unshift(newDesire);
+          this.displayDesires();
+          this.form.reset();
+          this.showToast('Desire added successfully!');
+        } catch (error) {
+          console.error('Error adding desire:', error);
+          this.showToast('Failed to add desire', true);
+        }
+      }
+
+      async handleCardActions(e) {
+        const card = e.target.closest('.desire-card');
+        if (!card) return;
+        
+        const cardId = card.dataset.id;
+        const desire = this.desires.find(d => d.id === cardId);
+        
+        if (!desire) return;
+
+        if (e.target.classList.contains('delete-btn')) {
+          await this.deleteDesire(cardId);
+        } else if (e.target.classList.contains('complete-btn')) {
+          await this.completeDesire(cardId);
+        } else if (e.target.classList.contains('add-note-btn')) {
+          const input = card.querySelector('.note-input input');
+          await this.addNote(cardId, input);
+        } else if (e.target.classList.contains('add-gratitude-btn')) {
+          const input = card.querySelector('.gratitude-input input');
+          await this.addGratitudeNote(cardId, input);
+        } else if (e.target.classList.contains('note-delete')) {
+          const noteId = e.target.dataset.noteId;
+          await this.deleteNote(cardId, noteId);
+        }
+      }
+
+    async completeDesire(id) {
+        const desire = this.desires.find(d => d.id === id);
+        if (!desire) return;
+
+        desire.completed = true;
+        desire.completionDate = new Date().toISOString();
+
+        try {
+          if (this.userId) {
+            const desireDoc = doc(db, 'users', this.userId, 'desires', id);
+            await updateDoc(desireDoc, {
+              completed: true,
+              completionDate: desire.completionDate
+            });
+          }
+          this.displayDesires();
+          this.showToast('Desire completed! 🎉');
+        } catch (error) {
+          console.error('Error completing desire:', error);
+          this.showToast('Failed to complete desire', true);
+        }
+      }
+
+      async deleteDesire(id) {
+        try {
+          if (this.userId) {
+            const desireDoc = doc(db, 'users', this.userId, 'desires', id);
+            await deleteDoc(desireDoc);
+          }
+          this.desires = this.desires.filter(d => d.id !== id);
+          this.displayDesires();
+          this.showToast('Desire deleted successfully');
+        } catch (error) {
+          console.error('Error deleting desire:', error);
+          this.showToast('Failed to delete desire', true);
+        }
+      }
+
+      async addNote(cardId, input) {
+        const noteText = input.value.trim();
+        if (!noteText) return;
+
+        const desire = this.desires.find(d => d.id === cardId);
+        if (!desire) return;
+
+        const note = {
+          id: Date.now().toString(),
+          text: noteText,
+          date: new Date().toISOString()
+        };
+
+        try {
+          if (this.userId) {
+            const desireDoc = doc(db, 'users', this.userId, 'desires', cardId);
+            await updateDoc(desireDoc, {
+              notes: arrayUnion(note)
+            });
+          }
+          desire.notes.push(note);
+          input.value = '';
+          this.displayDesires();
+          this.showToast('Note added successfully');
+        } catch (error) {
+          console.error('Error adding note:', error);
+          this.showToast('Failed to add note', true);
+        }
+      }
+
+      async addGratitudeNote(cardId, input) {
+        const noteText = input.value.trim();
+        if (!noteText) return;
+
+        const desire = this.desires.find(d => d.id === cardId);
+        if (!desire) return;
+
+        const gratitudeNote = {
+          id: Date.now().toString(),
+          text: noteText,
+          date: new Date().toISOString()
+        };
+
+        try {
+          if (this.userId) {
+            const desireDoc = doc(db, 'users', this.userId, 'desires', cardId);
+            await updateDoc(desireDoc, {
+              gratitudeNotes: arrayUnion(gratitudeNote)
+            });
+          }
+          if (!desire.gratitudeNotes) desire.gratitudeNotes = [];
+          desire.gratitudeNotes.push(gratitudeNote);
+          input.value = '';
+          this.displayDesires();
+          this.showToast('Gratitude expressed! 🙏');
+        } catch (error) {
+          console.error('Error adding gratitude note:', error);
+          this.showToast('Failed to add gratitude note', true);
+        }
+      }
+
+      async deleteNote(cardId, noteId) {
+        const desire = this.desires.find(d => d.id === cardId);
+        if (!desire) return;
+
+        const note = desire.notes.find(n => n.id === noteId);
+        if (!note) return;
+
+        try {
+          if (this.userId) {
+            const desireDoc = doc(db, 'users', this.userId, 'desires', cardId);
+            await updateDoc(desireDoc, {
+              notes: arrayRemove(note)
+            });
+          }
+          desire.notes = desire.notes.filter(n => n.id !== noteId);
+          this.displayDesires();
+          this.showToast('Note deleted successfully');
+        } catch (error) {
+          console.error('Error deleting note:', error);
+          this.showToast('Failed to delete note', true);
+        }
+      }
+
+      showToast(message, isError = false) {
+        this.toastEl.innerText = message;
+        this.toastEl.style.background = isError ? '#f56565' : '#48bb78';
+        this.toastEl.classList.add('show');
+        setTimeout(() => this.toastEl.classList.remove('show'), 3000);
+      }
+
+      displayDesires() {
+        const filteredDesires = this.desires.filter(d => 
+          d.completed === this.isViewingArchive
+        );
+
+        if (!filteredDesires.length) {
+          this.list.innerHTML = '';
+          this.emptyState.style.display = 'block';
+          this.emptyState.textContent = this.isViewingArchive ? 
+            'Your archive is empty.' : 
+            'No active desires yet. Start by adding one!';
+          return;
+        }
+
+        this.emptyState.style.display = 'none';
+        this.list.innerHTML = filteredDesires
+          .map(desire => `
+            <div class="desire-card ${desire.completed ? 'completed' : ''}" data-id="${desire.id}">
+              <h3>${desire.title}</h3>
+              <p>${desire.description || 'No description provided.'}</p>
+              
+              ${desire.completed ? `
+                <div class="gratitude-section">
+                  <h4>Completion Date: ${new Date(desire.completionDate).toLocaleDateString()}</h4>
+                  ${(desire.gratitudeNotes || []).map(note => `
+                    <div class="gratitude-note">
+                      <p>${note.text}</p>
+                      <small>${new Date(note.date).toLocaleDateString()}</small>
+                    </div>
+                  `).join('')}
+                  <div class="note-input gratitude-input">
+                    <input type="text" placeholder="Express your gratitude..." />
+                    <button class="add-gratitude-btn btn-success">Add Gratitude</button>
+                  </div>
+                </div>
+              ` : `
+                <button class="complete-btn btn-success">
+                  ✓ Mark Complete
+                </button>
+              `}
+              
+              <div class="notes-section">
+                <div class="note-list">
+                  ${desire.notes.map(note => `
+                    <div class="note">
+                      <span>${note.text}</span>
+                      <span>
+                        <small>${new Date(note.date).toLocaleDateString()}</small>
+                        <button class="note-delete" data-note-id="${note.id}">✖</button>
+                      </span>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="note-input">
+                  <input type="text" placeholder="Add a note..." />
+                  <button class="add-note-btn btn-primary">Add Note</button>
+                </div>
+              </div>
+
+              <button class="delete-btn btn-danger">Delete</button>
+            </div>
+          `).join('');
+      }
+    }
+
+    // Initialize the application
+    window.desireTracker = new DesireTracker();
+  </script>
 </body>
 </html>
